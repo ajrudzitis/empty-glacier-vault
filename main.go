@@ -23,7 +23,7 @@ func main() {
 	profileFlg := flag.String("profile", "default", "AWS shared config profile name")
 	vaultFlg := flag.String("vault", "", "Vault name to empty")
 	flag.Parse()
-	
+
 	// Validate flags
 	if *vaultFlg == "" {
 		log.Fatal("--vault must be set")
@@ -37,7 +37,7 @@ func main() {
 		config.WithRegion(*regionFlg),
 		config.WithSharedConfigProfile(*profileFlg))
 	if err != nil {
- 		log.Fatalf("enable to load config: %v", err)
+		log.Fatalf("enable to load config: %v", err)
 	}
 
 	// Create the client
@@ -48,7 +48,7 @@ func main() {
 		VaultName: vaultFlg,
 	})
 	if err != nil {
-		log.Fatalf("unable to call ListJobs: %v", err);
+		log.Fatalf("unable to call ListJobs: %v", err)
 	}
 
 	// Look through all the jobs and find the latest completed job
@@ -58,7 +58,7 @@ func main() {
 	// TODO: If there is a job running, wait for it to complete
 	var latestJob *string
 	var latestCompletionDate *string
-	
+
 	for _, job := range listJobsOutput.JobList {
 		if job.Action != types.ActionCodeInventoryRetrieval {
 			continue
@@ -79,7 +79,7 @@ func main() {
 	// Read the output from the selected job
 	getJobOutput, err := glacierClient.GetJobOutput(ctx, &glacier.GetJobOutputInput{
 		VaultName: vaultFlg,
-		JobId: latestJob ,
+		JobId:     latestJob,
 	})
 	if err != nil {
 		log.Fatalf("error getting job output: %v", err)
@@ -90,16 +90,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("error reading output body: %v", err)
 	}
-	
+
 	var outputData struct {
-		VaultARN string
+		VaultARN      string
 		InventoryDate *time.Time
-		ArchiveList []struct {
-			ArchiveId string
+		ArchiveList   []struct {
+			ArchiveId          string
 			ArchiveDescription string
-			CreationDate *time.Time
-			Size uint
-			SHA256TreeHash string
+			CreationDate       *time.Time
+			Size               uint
+			SHA256TreeHash     string
 		}
 	}
 
@@ -107,7 +107,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("error unmarhaling json: %v", err)
 	}
-
 
 	// Delete the archives
 	for _, archive := range outputData.ArchiveList {
@@ -121,7 +120,7 @@ func main() {
 		} else {
 			log.Printf("deleted archive %s\n", archive.ArchiveId)
 		}
-		
+
 	}
 
 }
